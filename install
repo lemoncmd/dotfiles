@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e
+
+CURRENT_DIR=$(
+  cd "$(dirname "$0")"
+  pwd
+)
+
+if [ ! -d "$HOME"/.config ]; then
+  mkdir "${HOME}"/.config
+fi
+
+ln -vfsn "${CURRENT_DIR}/nvim" "${HOME}"/.config/nvim
+
+if [ -f /.dockerenv ]; then
+  sudo apt-get update
+  export DEBIAN_FRONTEND=noninteractive
+
+  # nodejs
+  mkdir -p /tmp/nodejs
+  cd /tmp/nodejs
+  sudo apt autoremove -y nodejs
+  wget https://deb.nodesource.com/nsolid_setup_deb.sh
+  chmod 500 nsolid_setup_deb.sh
+  sudo ./nsolid_setup_deb.sh $NODE_VERSION
+  sudo apt-get install nodejs -y
+
+  # Neovim
+  sudo apt install -y software-properties-common
+  sudo add-apt-repository -y ppa:neovim-ppa/unstable
+  sudo apt update
+  sudo apt install -y neovim
+
+  # cleanup
+  sudo rm -rf /var/lib/apt/lists/*
+  sudo rm -rf /tmp/*
+fi
