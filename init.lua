@@ -147,16 +147,6 @@ require("lazy").setup({
     end
   },
   {
-    "Larpon/v-vim",
-    cond = function()
-      local path = "/home/lemon/verilogtest"
-      if vim.fn.getcwd():sub(1, #path) == path then
-        return false
-      end
-      return true
-    end
-  },
-  {
     "windwp/nvim-autopairs",
     event = "InsertEnter",
     opts = {
@@ -244,5 +234,15 @@ require("lazy").setup({
       { "<leader>fb", function () require("telescope.builtin").buffers() end },
       { "<leader>fh", function () require("telescope.builtin").help_tags() end },
     }
+  },
+  {
+    "Civitasv/cmake-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      cmake_generate_options = {
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+      },
+      cmake_build_directory = "build/${variant:buildType}",
+    },
   },
 })
