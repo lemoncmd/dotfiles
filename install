@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+NODE_VERSION=21
+
 CURRENT_DIR=$(
   cd "$(dirname "$0")"
   pwd
