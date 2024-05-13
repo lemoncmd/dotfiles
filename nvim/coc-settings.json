@@ -1,0 +1,20 @@
+{
+  "languageserver": {
+    "svls": {
+      "command": "svls",
+      "filetypes": ["systemverilog"]
+    },
+    "verible": {
+      "command": "verible-verilog-ls",
+      "filetypes": ["systemverilog"]
+    }
+  },
+  "clangd.arguments": [
+    "--clang-tidy",
+    "--pch-storage=memory"
+  ],
+  "coc.preferences.formatOnSaveFiletypes": [
+    "cpp",
+    "systemverilog"
+  ]
+}
