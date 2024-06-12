@@ -233,7 +233,7 @@ require("lazy").setup({
       { "<leader>fg", function () require("telescope.builtin").live_grep() end },
       { "<leader>fb", function () require("telescope.builtin").buffers() end },
       { "<leader>fh", function () require("telescope.builtin").help_tags() end },
-    }
+    },
   },
   {
     "Civitasv/cmake-tools.nvim",
@@ -244,5 +244,15 @@ require("lazy").setup({
       },
       cmake_build_directory = "build/${variant:buildType}",
     },
+  },
+  {
+    "echasnovski/mini.files",
+    keys = {
+      { "<leader><leader>", function () MiniFiles.open() end }
+    },
+    lazy = false,
+    config = function ()
+      require('mini.files').setup({})
+    end
   },
 })
