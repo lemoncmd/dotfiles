@@ -34,6 +34,9 @@ if [ -f /.dockerenv ]; then
   sudo apt update
   sudo apt install -y neovim
 
+  # ripgrep
+  sudo apt install -y ripgrep
+
   # cleanup
   sudo rm -rf /var/lib/apt/lists/*
   sudo rm -rf /tmp/*

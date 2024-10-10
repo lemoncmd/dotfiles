@@ -16,5 +16,6 @@
   "coc.preferences.formatOnSaveFiletypes": [
     "cpp",
     "systemverilog"
-  ]
+  ],
+ "rust-analyzer.check.command": "clippy"
 }
