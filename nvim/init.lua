@@ -359,7 +359,7 @@ require("lazy").setup({
       { "<leader>agd", "<cmd>Lspsaga goto_definition<CR>", silent = true, nowait = true },
       { "<leader>agt", "<cmd>Lspsaga goto_type_definition<CR>", silent = true, nowait = true },
       { "<leader>af", "<cmd>Lspsaga finder<CR>", silent = true, nowait = true },
-      { "<leader>t", "<cmd>Lspsaga term_toggle<CR>", silent = true, nowait = true },
+      { "<leader>t", "<cmd>Lspsaga term_toggle bash<CR>", silent = true, nowait = true },
     },
   },
   {
