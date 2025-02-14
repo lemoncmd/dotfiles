@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-NODE_VERSION=21
-
 CURRENT_DIR=$(
   cd "$(dirname "$0")"
   pwd
@@ -18,15 +16,6 @@ ln -vfsn "${CURRENT_DIR}/coc" "${HOME}"/.config/coc
 if [ -f /.dockerenv ]; then
   sudo apt-get update
   export DEBIAN_FRONTEND=noninteractive
-
-  # nodejs
-  mkdir -p /tmp/nodejs
-  cd /tmp/nodejs
-  sudo apt autoremove -y nodejs
-  wget https://deb.nodesource.com/nsolid_setup_deb.sh
-  chmod 500 nsolid_setup_deb.sh
-  sudo ./nsolid_setup_deb.sh $NODE_VERSION
-  sudo apt-get install nodejs -y
 
   # Neovim
   sudo apt install -y software-properties-common
