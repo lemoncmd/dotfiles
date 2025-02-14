@@ -99,13 +99,17 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 function prequire(...)
-    local status, lib = pcall(require, ...)
-    if(status) then return lib end
-    return nil
+  local status, lib = pcall(require, ...)
+  if(status) then return lib end
+  return nil
 end
 
 require("lazy").setup({
-  "lukas-reineke/indent-blankline.nvim",
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {},
+  },
   {
     "sainnhe/sonokai",
     init = function()
