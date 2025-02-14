@@ -98,6 +98,12 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+function prequire(...)
+    local status, lib = pcall(require, ...)
+    if(status) then return lib end
+    return nil
+end
+
 require("lazy").setup({
   "lukas-reineke/indent-blankline.nvim",
   {
@@ -152,22 +158,6 @@ require("lazy").setup({
     opts = {
       map_cr = false
     },
-    keys = {
-      {
-        mode = "i",
-        "<CR>",
-        function()
-          local npairs = require("nvim-autopairs")
-          if vim.fn["coc#pum#visible"]() ~= 0 then
-            return vim.fn["coc#pum#confirm"]()
-          else
-            return npairs.autopairs_cr()
-          end
-        end,
-        expr = true,
-        replace_keycodes = false,
-      }
-    },
     init = function ()
       local npairs = require'nvim-autopairs'
       local Rule   = require'nvim-autopairs.rule'
@@ -197,17 +187,154 @@ require("lazy").setup({
     end
   },
   {
-    "neoclide/coc.nvim",
-    branch = "release",
-    lazy = false,
-    keys = {
-      { "[g", "<Plug>(coc-diagnostic-prev)", silent = true },
-      { "]g", "<Plug>(coc-diagnostic-next)", silent = true },
-      { "<leader>ac", "<Plug>(coc-codeaction-cursor)", silent = true, nowait = true },
+    "neovim/nvim-lspconfig",
+    dependencies = { "saghen/blink.cmp", "nvimdev/lspsaga.nvim" },
+    opts = {
+      servers = {
+        clangd = {},
+        pyright = {},
+        v_analyzer = {},
+        rust_analyzer = {},
+      }
     },
-    init = function()
-      vim.api.nvim_create_user_command("Format", "call CocAction('format')", {})
-    end
+    config = function(_, opts)
+      local lspconfig = require('lspconfig')
+      for server, config in pairs(opts.servers) do
+        -- passing config.capabilities to blink.cmp merges with the capabilities in your
+        -- `opts[server].capabilities, if you've defined it
+        config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
+        lspconfig[server].setup(config)
+      end
+    end,
+  },
+  "williamboman/mason.nvim",
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = {
+      { "williamboman/mason.nvim" },
+      { "neovim/nvim-lspconfig" },
+    },
+    config = function()
+      require("mason").setup()
+
+      local registry = require "mason-registry"
+      local packages = {
+        "clangd",
+        "clang-format",
+        "pyright",
+        "v-analyzer",
+        "rust-analyzer",
+      }
+      registry.refresh(function ()
+        for _, pkg_name in ipairs(packages) do
+          local pkg = registry.get_package(pkg_name)
+          if not pkg:is_installed() then
+            pkg:install()
+          end
+        end
+      end)
+
+      require("mason-lspconfig").setup()
+    end,
+  },
+  {
+    "saghen/blink.cmp",
+    version = '*',
+    opts = {
+      keymap = { preset = "enter" },
+      sources = {
+        min_keyword_length = function(ctx)
+          -- only applies when typing a command, doesn't apply to arguments
+          if ctx.mode == 'cmdline' and string.find(ctx.line, ' ') == nil then return 2 end
+          return 0
+        end,
+        per_filetype = {
+          codecompanion = { "codecompanion" },
+        },
+      },
+      completion = {
+        menu = {
+          auto_show = function(ctx)
+            return ctx.mode ~= "cmdline" or not vim.tbl_contains({ '/', '?' }, vim.fn.getcmdtype())
+          end,
+        },
+        documentation = {
+          auto_show = true,
+          auto_show_delay_ms = 500,
+        },
+      },
+    },
+  },
+  {
+    "nvimtools/none-ls.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "williamboman/mason.nvim",
+      "jayp0521/mason-null-ls.nvim",
+    },
+    config = function()
+      local null_ls = require("null-ls")
+      local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
+
+      null_ls.setup({
+        sources = {
+          null_ls.builtins.formatting.clang_format,
+        },
+        on_attach = function(client, bufnr)
+          if client.supports_method("textDocument/formatting") then
+            vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
+            vim.api.nvim_create_autocmd("BufWritePre", {
+              group = augroup,
+              buffer = bufnr,
+              callback = function()
+                vim.lsp.buf.format({ async = false })
+              end,
+            })
+          end
+        end,
+      })
+
+      require("null-ls.client").notify_client = function(...)
+        local method, params
+        if type((arg)[1]) == "table" then
+          _, method, params = unpack(arg)
+        else
+          method, params = unpack(arg)
+        end
+        if not client then
+          require("null-ls.logger"):debug(
+            string.format("unable to notify client for method %s (client not active): %s", method, vim.inspect(params))
+          )
+          return
+        end
+        client:notify(method, params)
+      end
+    end,
+  },
+  {
+    "nvimdev/lspsaga.nvim",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons",
+    },
+    opts = {
+      symbol_in_winbar = {
+        enable = false,
+      },
+    },
+    keys = {
+      { "[g", "<cmd>Lspsaga diagnostic_jump_prev<CR>", silent = true },
+      { "]g", "<cmd>Lspsaga diagnostic_jump_next<CR>", silent = true },
+      { "<leader>ac", "<cmd>Lspsaga code_action<CR>", silent = true, nowait = true },
+      { "<leader>ar", "<cmd>Lspsaga rename<CR>", silent = true, nowait = true },
+      { "<leader>ah", "<cmd>Lspsaga hover_doc<CR>", silent = true, nowait = true },
+      { "<leader>ad", "<cmd>Lspsaga peek_definition<CR>", silent = true, nowait = true },
+      { "<leader>at", "<cmd>Lspsaga peek_type_definition<CR>", silent = true, nowait = true },
+      { "<leader>agd", "<cmd>Lspsaga goto_definition<CR>", silent = true, nowait = true },
+      { "<leader>agt", "<cmd>Lspsaga goto_type_definition<CR>", silent = true, nowait = true },
+      { "<leader>af", "<cmd>Lspsaga finder<CR>", silent = true, nowait = true },
+      { "<leader>t", "<cmd>Lspsaga term_toggle<CR>", silent = true, nowait = true },
+    },
   },
   {
     "nvim-treesitter/nvim-treesitter",
@@ -255,4 +382,5 @@ require("lazy").setup({
       require('mini.files').setup({})
     end
   },
+  prequire("plugins.codecompanion"),
 })
