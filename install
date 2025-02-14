@@ -11,7 +11,6 @@ if [ ! -d "$HOME"/.config ]; then
 fi
 
 ln -vfsn "${CURRENT_DIR}/nvim" "${HOME}"/.config/nvim
-ln -vfsn "${CURRENT_DIR}/coc" "${HOME}"/.config/coc
 
 if [ -f /.dockerenv ]; then
   sudo apt-get update

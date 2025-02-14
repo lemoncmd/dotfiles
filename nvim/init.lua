@@ -195,10 +195,24 @@ require("lazy").setup({
     dependencies = { "saghen/blink.cmp", "nvimdev/lspsaga.nvim" },
     opts = {
       servers = {
-        clangd = {},
+        clangd = {
+          cmd = {
+            "clangd",
+            "--clang-tidy",
+            "--pch-storage=memory"
+          },
+        },
         pyright = {},
         v_analyzer = {},
-        rust_analyzer = {},
+        rust_analyzer = {
+          settings = {
+            ["rust-analyzer"] = {
+              check = {
+                command = "clippy",
+              },
+            },
+          },
+        },
       }
     },
     config = function(_, opts)
