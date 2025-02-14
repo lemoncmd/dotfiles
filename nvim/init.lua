@@ -214,6 +214,7 @@ require("lazy").setup({
           },
         },
       }
+      inlay_hints = { enabled = true },
     },
     config = function(_, opts)
       local lspconfig = require('lspconfig')
