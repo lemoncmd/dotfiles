@@ -408,5 +408,11 @@ require("lazy").setup({
       require('mini.files').setup({})
     end
   },
+  {
+    "echasnovski/mini.ai",
+    config = function ()
+      require('mini.ai').setup({})
+    end
+  },
   prequire("plugins.codecompanion"),
 })
