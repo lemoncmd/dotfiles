@@ -105,56 +105,11 @@ function prequire(...)
 end
 
 require("lazy").setup({
+  -- Core functionality
   {
     "lukas-reineke/indent-blankline.nvim",
     main = "ibl",
     opts = {},
-  },
-  {
-    "sainnhe/sonokai",
-    init = function()
-      vim.g.sonokai_style = "atlantis"
-    end,
-    config = function()
-      vim.cmd([[colorscheme sonokai]])
-      vim.cmd([[highlight Normal ctermbg=none guibg=NONE]])
-      vim.cmd([[highlight NonText ctermbg=none guibg=NONE]])
-      vim.cmd([[highlight LineNr ctermbg=none guibg=NONE]])
-      vim.cmd([[highlight Folded ctermbg=none guibg=NONE]])
-      vim.cmd([[highlight EndOfBuffer ctermbg=none guibg=NONE]])
-      vim.cmd([[highlight SignColumn ctermbg=none guibg=NONE]])
-    end
-  },
-  {
-    "nvim-lualine/lualine.nvim",
-    dependencies = { "kyazdani42/nvim-web-devicons", "sainnhe/sonokai" },
-    opts = {
-      tabline = {
-        lualine_a = {
-          {
-            "tabs",
-            max_length = vim.o.columns,
-            mode = 2,
-            fmt = function(name, context)
-              -- Show + if buffer is modified in tab
-              local buflist = vim.fn.tabpagebuflist(context.tabnr)
-              local winnr = vim.fn.tabpagewinnr(context.tabnr)
-              local bufnr = buflist[winnr]
-              local mod = vim.fn.getbufvar(bufnr, '&mod')
-
-              return name .. (mod == 1 and ' +' or '')
-            end
-          }
-        },
-      },
-      winbar = {},
-    }
-  },
-  {
-    "rust-lang/rust.vim",
-    init = function()
-      vim.g.rustfmt_autosave = 1
-    end
   },
   {
     "windwp/nvim-autopairs",
@@ -191,6 +146,125 @@ require("lazy").setup({
     end
   },
   {
+    "echasnovski/mini.ai",
+    config = function ()
+      require('mini.ai').setup({})
+    end
+  },
+
+  -- UI/UX
+  {
+    "sainnhe/sonokai",
+    init = function()
+      vim.g.sonokai_style = "atlantis"
+    end,
+    config = function()
+      vim.cmd([[colorscheme sonokai]])
+      vim.cmd([[highlight Normal ctermbg=none guibg=NONE]])
+      vim.cmd([[highlight NonText ctermbg=none guibg=NONE]])
+      vim.cmd([[highlight LineNr ctermbg=none guibg=NONE]])
+      vim.cmd([[highlight Folded ctermbg=none guibg=NONE]])
+      vim.cmd([[highlight EndOfBuffer ctermbg=none guibg=NONE]])
+      vim.cmd([[highlight SignColumn ctermbg=none guibg=NONE]])
+    end
+  },
+  {
+    "nvim-lualine/lualine.nvim",
+    dependencies = { "kyazdani42/nvim-web-devicons", "sainnhe/sonokai" },
+    opts = {
+      tabline = {
+        lualine_a = {
+          {
+            "tabs",
+            max_length = vim.o.columns,
+            mode = 2,
+            fmt = function(name, context)
+              local buflist = vim.fn.tabpagebuflist(context.tabnr)
+              local winnr = vim.fn.tabpagewinnr(context.tabnr)
+              local bufnr = buflist[winnr]
+              local mod = vim.fn.getbufvar(bufnr, '&mod')
+
+              return name .. (mod == 1 and ' +' or '')
+            end
+          }
+        },
+      },
+      winbar = {},
+    }
+  },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = function ()
+      require("nvim-treesitter.install").update({ with_sync = true })
+      vim.cmd("TSUpdate")
+    end,
+    config = function ()
+      require("nvim-treesitter.configs").setup({
+        highlight = {
+          enable = true,
+        },
+        ensure_installed = "all",
+      })
+    end
+  },
+  "nvim-treesitter/nvim-treesitter-context",
+
+  -- Code completion
+  {
+    "saghen/blink.cmp",
+    version = '*',
+    opts = {
+      keymap = { preset = "enter" },
+      sources = {
+        min_keyword_length = function(ctx)
+          if ctx.mode == 'cmdline' and string.find(ctx.line, ' ') == nil then return 2 end
+          return 0
+        end,
+        per_filetype = {
+          codecompanion = { "codecompanion" },
+        },
+      },
+      completion = {
+        menu = {
+          auto_show = function(ctx)
+            return ctx.mode ~= "cmdline" or not vim.tbl_contains({ '/', '?' }, vim.fn.getcmdtype())
+          end,
+        },
+        documentation = {
+          auto_show = true,
+          auto_show_delay_ms = 500,
+        },
+      },
+    },
+  },
+  {
+    "nvimdev/lspsaga.nvim",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons",
+    },
+    opts = {
+      symbol_in_winbar = {
+        enable = false,
+      },
+    },
+    keys = {
+      { "[g", "<cmd>Lspsaga diagnostic_jump_prev<CR>", silent = true },
+      { "]g", "<cmd>Lspsaga diagnostic_jump_next<CR>", silent = true },
+      { "<leader>ac", "<cmd>Lspsaga code_action<CR>", silent = true, nowait = true },
+      { "<leader>ar", "<cmd>Lspsaga rename<CR>", silent = true, nowait = true },
+      { "<leader>ah", "<cmd>Lspsaga hover_doc<CR>", silent = true, nowait = true },
+      { "<leader>ad", "<cmd>Lspsaga peek_definition<CR>", silent = true, nowait = true },
+      { "<leader>at", "<cmd>Lspsaga peek_type_definition<CR>", silent = true, nowait = true },
+      { "<leader>agd", "<cmd>Lspsaga goto_definition<CR>", silent = true, nowait = true },
+      { "<leader>agt", "<cmd>Lspsaga goto_type_definition<CR>", silent = true, nowait = true },
+      { "<leader>af", "<cmd>Lspsaga finder<CR>", silent = true, nowait = true },
+      { "<leader>t", "<cmd>Lspsaga term_toggle bash<CR>", silent = true, nowait = true },
+    },
+  },
+
+  -- Language Server Protocol
+  {
     "neovim/nvim-lspconfig",
     dependencies = { "saghen/blink.cmp", "nvimdev/lspsaga.nvim" },
     opts = {
@@ -218,8 +292,6 @@ require("lazy").setup({
     config = function(_, opts)
       local lspconfig = require('lspconfig')
       for server, config in pairs(opts.servers) do
-        -- passing config.capabilities to blink.cmp merges with the capabilities in your
-        -- `opts[server].capabilities, if you've defined it
         config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
         lspconfig[server].setup(config)
       end
@@ -232,64 +304,6 @@ require("lazy").setup({
     config = function()
         require("inlay-hints").setup()
     end
-  },
-  "williamboman/mason.nvim",
-  {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = {
-      { "williamboman/mason.nvim" },
-      { "neovim/nvim-lspconfig" },
-    },
-    config = function()
-      require("mason").setup()
-
-      local registry = require "mason-registry"
-      local packages = {
-        "clangd",
-        "clang-format",
-        "pyright",
-        "v-analyzer",
-        "rust-analyzer",
-      }
-      registry.refresh(function ()
-        for _, pkg_name in ipairs(packages) do
-          local pkg = registry.get_package(pkg_name)
-          if not pkg:is_installed() then
-            pkg:install()
-          end
-        end
-      end)
-
-      require("mason-lspconfig").setup()
-    end,
-  },
-  {
-    "saghen/blink.cmp",
-    version = '*',
-    opts = {
-      keymap = { preset = "enter" },
-      sources = {
-        min_keyword_length = function(ctx)
-          -- only applies when typing a command, doesn't apply to arguments
-          if ctx.mode == 'cmdline' and string.find(ctx.line, ' ') == nil then return 2 end
-          return 0
-        end,
-        per_filetype = {
-          codecompanion = { "codecompanion" },
-        },
-      },
-      completion = {
-        menu = {
-          auto_show = function(ctx)
-            return ctx.mode ~= "cmdline" or not vim.tbl_contains({ '/', '?' }, vim.fn.getcmdtype())
-          end,
-        },
-        documentation = {
-          auto_show = true,
-          auto_show_delay_ms = 500,
-        },
-      },
-    },
   },
   {
     "nvimtools/none-ls.nvim",
@@ -337,56 +351,37 @@ require("lazy").setup({
       end
     end,
   },
+
+  -- Toolchain
+  "williamboman/mason.nvim",
   {
-    "nvimdev/lspsaga.nvim",
+    "williamboman/mason-lspconfig.nvim",
     dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-tree/nvim-web-devicons",
+      { "williamboman/mason.nvim" },
+      { "neovim/nvim-lspconfig" },
     },
-    opts = {
-      symbol_in_winbar = {
-        enable = false,
-      },
-    },
-    keys = {
-      { "[g", "<cmd>Lspsaga diagnostic_jump_prev<CR>", silent = true },
-      { "]g", "<cmd>Lspsaga diagnostic_jump_next<CR>", silent = true },
-      { "<leader>ac", "<cmd>Lspsaga code_action<CR>", silent = true, nowait = true },
-      { "<leader>ar", "<cmd>Lspsaga rename<CR>", silent = true, nowait = true },
-      { "<leader>ah", "<cmd>Lspsaga hover_doc<CR>", silent = true, nowait = true },
-      { "<leader>ad", "<cmd>Lspsaga peek_definition<CR>", silent = true, nowait = true },
-      { "<leader>at", "<cmd>Lspsaga peek_type_definition<CR>", silent = true, nowait = true },
-      { "<leader>agd", "<cmd>Lspsaga goto_definition<CR>", silent = true, nowait = true },
-      { "<leader>agt", "<cmd>Lspsaga goto_type_definition<CR>", silent = true, nowait = true },
-      { "<leader>af", "<cmd>Lspsaga finder<CR>", silent = true, nowait = true },
-      { "<leader>t", "<cmd>Lspsaga term_toggle bash<CR>", silent = true, nowait = true },
-    },
-  },
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = function ()
-      require("nvim-treesitter.install").update({ with_sync = true })
-      vim.cmd("TSUpdate")
+    config = function()
+      require("mason").setup()
+
+      local registry = require "mason-registry"
+      local packages = {
+        "clangd",
+        "clang-format",
+        "pyright",
+        "v-analyzer",
+        "rust-analyzer",
+      }
+      registry.refresh(function ()
+        for _, pkg_name in ipairs(packages) do
+          local pkg = registry.get_package(pkg_name)
+          if not pkg:is_installed() then
+            pkg:install()
+          end
+        end
+      end)
+
+      require("mason-lspconfig").setup()
     end,
-    config = function ()
-      require("nvim-treesitter.configs").setup({
-        highlight = {
-          enable = true,
-        },
-        ensure_installed = "all",
-      })
-    end
-  },
-  "nvim-treesitter/nvim-treesitter-context",
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons" },
-    keys = {
-      { "<leader>ff", function () require("telescope.builtin").find_files() end },
-      { "<leader>fg", function () require("telescope.builtin").live_grep() end },
-      { "<leader>fb", function () require("telescope.builtin").buffers() end },
-      { "<leader>fh", function () require("telescope.builtin").help_tags() end },
-    },
   },
   {
     "Civitasv/cmake-tools.nvim",
@@ -399,6 +394,14 @@ require("lazy").setup({
     },
   },
   {
+    "rust-lang/rust.vim",
+    init = function()
+      vim.g.rustfmt_autosave = 1
+    end
+  },
+
+  -- File browser
+  {
     "echasnovski/mini.files",
     keys = {
       { "<leader><leader>", function () MiniFiles.open() end }
@@ -409,10 +412,17 @@ require("lazy").setup({
     end
   },
   {
-    "echasnovski/mini.ai",
-    config = function ()
-      require('mini.ai').setup({})
-    end
+    "nvim-telescope/telescope.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons" },
+    keys = {
+      { "<leader>ff", function () require("telescope.builtin").find_files() end },
+      { "<leader>fg", function () require("telescope.builtin").live_grep() end },
+      { "<leader>fb", function () require("telescope.builtin").buffers() end },
+      { "<leader>fh", function () require("telescope.builtin").help_tags() end },
+    },
   },
+
+  -- AI
   prequire("plugins.codecompanion"),
+  prequire("plugins.avante"),
 })
