@@ -423,6 +423,5 @@ require("lazy").setup({
   },
 
   -- AI
-  prequire("plugins.codecompanion"),
   prequire("plugins.avante"),
 })
