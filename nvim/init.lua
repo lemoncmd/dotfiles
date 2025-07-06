@@ -399,6 +399,9 @@ require("lazy").setup({
       vim.g.rustfmt_autosave = 1
     end
   },
+  "doccaico/v-vim",
+  "tokorom/vim-review",
+  "veryl-lang/veryl.vim",
 
   -- File browser
   {
