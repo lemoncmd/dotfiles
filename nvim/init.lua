@@ -309,49 +309,22 @@ require("lazy").setup({
     end
   },
   {
-    "nvimtools/none-ls.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "williamboman/mason.nvim",
-      "jayp0521/mason-null-ls.nvim",
-    },
+    "stevearc/conform.nvim",
     config = function()
-      local null_ls = require("null-ls")
-      local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
-
-      null_ls.setup({
-        sources = {
-          null_ls.builtins.formatting.clang_format,
+      local web_formatter = { "biome", "prettierd", "prettier", stop_after_first = true }
+      require("conform").setup({
+        formatters_by_ft = {
+          vlang = { "v" },
+          rust = { "rustfmt" },
+          javascript = web_formatter,
+          typescript = web_formatter,
+          json = web_formatter,
         },
-        on_attach = function(client, bufnr)
-          if client.supports_method("textDocument/formatting") then
-            vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
-            vim.api.nvim_create_autocmd("BufWritePre", {
-              group = augroup,
-              buffer = bufnr,
-              callback = function()
-                vim.lsp.buf.format({ async = false })
-              end,
-            })
-          end
-        end,
+        format_on_save = {
+          timeout_ms = 500,
+          lsp_format = "fallback",
+        },
       })
-
-      require("null-ls.client").notify_client = function(...)
-        local method, params
-        if type((arg)[1]) == "table" then
-          _, method, params = unpack(arg)
-        else
-          method, params = unpack(arg)
-        end
-        if not client then
-          require("null-ls.logger"):debug(
-            string.format("unable to notify client for method %s (client not active): %s", method, vim.inspect(params))
-          )
-          return
-        end
-        client:notify(method, params)
-      end
     end,
   },
 
@@ -373,6 +346,8 @@ require("lazy").setup({
         "pyright",
         "v-analyzer",
         "rust-analyzer",
+        "typescript-language-server",
+        "prettierd",
       }
       registry.refresh(function ()
         for _, pkg_name in ipairs(packages) do
@@ -396,12 +371,7 @@ require("lazy").setup({
       cmake_build_directory = "build/${variant:buildType}",
     },
   },
-  {
-    "rust-lang/rust.vim",
-    init = function()
-      vim.g.rustfmt_autosave = 1
-    end
-  },
+  "rust-lang/rust.vim",
   "doccaico/v-vim",
   "tokorom/vim-review",
   "veryl-lang/veryl.vim",
