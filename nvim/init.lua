@@ -204,6 +204,7 @@ require("lazy").setup({
           enable = true,
         },
         ensure_installed = "all",
+        ignore_install = { "ipkg" },
       })
     end
   },
