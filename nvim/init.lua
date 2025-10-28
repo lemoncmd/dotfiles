@@ -138,7 +138,7 @@ require("lazy").setup({
     "windwp/nvim-autopairs",
     event = "InsertEnter",
     opts = {
-      map_cr = false
+      map_cr = true
     },
     init = function ()
       local npairs = require'nvim-autopairs'
