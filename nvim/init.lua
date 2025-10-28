@@ -84,6 +84,29 @@ vim.keymap.set("n", "sQ", ":<C-u>bd<CR>")
 
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { silent = true })
 
+-- lsp
+vim.lsp.config('clangd', {
+  cmd = {
+    "clangd",
+    "--clang-tidy",
+    "--pch-storage=memory"
+  },
+})
+vim.lsp.config('rust_analyzer', {
+  settings = {
+    ["rust-analyzer"] = {
+      check = {
+        command = "clippy",
+      },
+    },
+  },
+})
+vim.lsp.enable('clangd')
+vim.lsp.enable('pyright')
+vim.lsp.enable('v_analyzer')
+vim.lsp.enable('rust_analyzer')
+vim.lsp.enable('ts_ls')
+
 -- plugin
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -268,39 +291,7 @@ require("lazy").setup({
   },
 
   -- Language Server Protocol
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = { "saghen/blink.cmp", "nvimdev/lspsaga.nvim" },
-    opts = {
-      servers = {
-        clangd = {
-          cmd = {
-            "clangd",
-            "--clang-tidy",
-            "--pch-storage=memory"
-          },
-        },
-        pyright = {},
-        v_analyzer = {},
-        rust_analyzer = {
-          settings = {
-            ["rust-analyzer"] = {
-              check = {
-                command = "clippy",
-              },
-            },
-          },
-        },
-      },
-    },
-    config = function(_, opts)
-      local lspconfig = require('lspconfig')
-      for server, config in pairs(opts.servers) do
-        config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
-        lspconfig[server].setup(config)
-      end
-    end,
-  },
+  "neovim/nvim-lspconfig",
   {
     "MysticalDevil/inlay-hints.nvim",
     event = "LspAttach",
