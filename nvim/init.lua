@@ -121,12 +121,6 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-function prequire(...)
-  local status, lib = pcall(require, ...)
-  if(status) then return lib end
-  return nil
-end
-
 require("lazy").setup({
   -- Core functionality
   {
@@ -389,7 +383,4 @@ require("lazy").setup({
       { "<leader>fh", function () require("telescope.builtin").help_tags() end },
     },
   },
-
-  -- AI
-  prequire("plugins.avante"),
 })
